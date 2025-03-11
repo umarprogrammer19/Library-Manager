@@ -103,7 +103,7 @@ def main():
                         if add_book(title, author, isbn, year, genre):
                             st.success("Book added successfully")
                             st.session_state['action'] = 'view'
-                            st.experimental_rerun()
+                            st.rerun()
                         else:
                             st.error("Error: ISBN already exists")
                     else:
@@ -111,7 +111,7 @@ def main():
             with col2:
                 if st.button("Cancel"):
                     st.session_state['action'] = 'view'
-                    st.experimental_rerun()
+                    st.rerun()
 
         elif st.session_state['action'] == 'edit':
             st.subheader("Edit Book")
@@ -136,7 +136,7 @@ def main():
                             if update_book(book_id, title, author, isbn, year, genre):
                                 st.success("Book updated successfully")
                                 st.session_state['action'] = 'view'
-                                st.experimental_rerun()
+                                st.rerun()
                             else:
                                 st.error("Error: ISBN already exists")
                         else:
@@ -144,7 +144,7 @@ def main():
                 with col2:
                     if st.button("Cancel"):
                         st.session_state['action'] = 'view'
-                        st.experimental_rerun()
+                        st.rerun()
             else:
                 st.error("Book not found")
                 st.session_state['action'] = 'view'
@@ -178,10 +178,10 @@ def main():
                     if st.button("Edit", key=f"edit_{book[0]}"):
                         st.session_state['action'] = 'edit'
                         st.session_state['edit_id'] = book[0]
-                        st.experimental_rerun()
+                        st.rerun()
                     if st.button("Delete", key=f"delete_{book[0]}"):
                         delete_book(book[0])
-                        st.experimental_rerun()  # Refresh the list
+                        st.rerun()  # Refresh the list
     else:
         st.write("No books found.")
 
