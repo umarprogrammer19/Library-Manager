@@ -1,5 +1,9 @@
 import json
 import os
+from colorama import Fore, Style, init
+
+# Initialize colorama
+init(autoreset=True)
 
 
 def load_library(filename):
@@ -18,79 +22,82 @@ def save_library(library, filename):
 
 def add_book(library):
     """Prompt user for book details and add the book to the library."""
-    title = input("Enter the book title: ")
-    author = input("Enter the author: ")
+    print(Fore.CYAN + "📖 Enter the book details:")
+    title = input(Fore.GREEN + "Title: ")
+    author = input(Fore.GREEN + "Author: ")
+
     while True:
-        year_str = input("Enter the publication year: ")
+        year_str = input(Fore.GREEN + "Publication Year: ")
         if year_str.isdigit():
             year = int(year_str)
             break
-        print("Please enter a valid year.")
-    genre = input("Enter the genre: ")
+        print(Fore.RED + "⚠️ Please enter a valid year.")
+
+    genre = input(Fore.GREEN + "Genre: ")
+
     while True:
-        read_status = input("Have you read this book? (yes/no): ").lower()
+        read_status = input(Fore.YELLOW + "Have you read this book? (yes/no): ").lower()
         if read_status in ["yes", "no"]:
-            read = True if read_status == "yes" else False
+            read = read_status == "yes"
             break
-        print("Please enter 'yes' or 'no'.")
-    book = {
-        "title": title,
-        "author": author,
-        "year": year,
-        "genre": genre,
-        "read": read,
-    }
+        print(Fore.RED + "⚠️ Please enter 'yes' or 'no'.")
+
+    book = {"title": title, "author": author, "year": year, "genre": genre, "read": read}
     library.append(book)
-    print("Book added successfully!")
+    print(Fore.LIGHTGREEN_EX + "✅ Book added successfully!")
 
 
 def remove_book(library):
     """Remove a book by title from the library."""
-    title = input("Enter the title of the book to remove: ")
+    title = input(Fore.YELLOW + "Enter the title of the book to remove: ")
     for book in library[:]:
         if book["title"].lower() == title.lower():
             library.remove(book)
-            print("Book removed successfully!")
+            print(Fore.RED + "🗑 Book removed successfully!")
             return
-    print("Book not found.")
+    print(Fore.RED + "⚠️ Book not found.")
 
 
 def search_books(library):
     """Search for books by title or author and display matches."""
-    print("Search by:")
-    print("1. Title")
-    print("2. Author")
-    search_type = input("Enter your choice: ")
+    print(Fore.CYAN + "🔍 Search by:")
+    print(Fore.YELLOW + "1. Title")
+    print(Fore.YELLOW + "2. Author")
+    search_type = input(Fore.YELLOW + "Enter your choice: ")
+
     if search_type == "1":
-        term = input("Enter the title: ").lower()
+        term = input(Fore.GREEN + "Enter the title: ").lower()
         matches = [book for book in library if term in book["title"].lower()]
     elif search_type == "2":
-        term = input("Enter the author: ").lower()
+        term = input(Fore.GREEN + "Enter the author: ").lower()
         matches = [book for book in library if term in book["author"].lower()]
     else:
-        print("Invalid choice.")
+        print(Fore.RED + "⚠️ Invalid choice.")
         return
+
     if matches:
-        print("Matching Books:")
+        print(Fore.LIGHTBLUE_EX + "📚 Matching Books:")
         for i, book in enumerate(matches, 1):
-            status = "Read" if book["read"] else "Unread"
+            status = Fore.GREEN + "✔ Read" if book["read"] else Fore.RED + "❌ Unread"
             print(
-                f"{i}. {book['title']} by {book['author']} ({book['year']}) - {book['genre']} - {status}"
+                Fore.YELLOW
+                + f"{i}. {book['title']} by {book['author']} ({book['year']}) - {book['genre']} - {status}"
             )
     else:
-        print("No matching books found.")
+        print(Fore.RED + "⚠️ No matching books found.")
 
 
 def display_all_books(library):
     """Display all books in the library with formatted output."""
     if not library:
-        print("Your library is empty.")
+        print(Fore.RED + "📂 Your library is empty.")
     else:
-        print("Your Library:")
+        print(Fore.LIGHTCYAN_EX + "📚 Your Library:")
         for i, book in enumerate(library, 1):
-            status = "Read" if book["read"] else "Unread"
+            status = Fore.GREEN + "✔ Read" if book["read"] else Fore.RED + "❌ Unread"
             print(
-                f"{i}. {book['title']} by {book['author']} ({book['year']}) - {book['genre']} - {status}"
+                Fore.YELLOW
+                + f"{i}. {book['title']} by {book['author']} ({book['year']}) - {book['genre']} - {status}"
             )
 
 
@@ -98,33 +105,35 @@ def display_statistics(library):
     """Display total number of books and percentage read."""
     total = len(library)
     if total == 0:
-        print("Total books: 0")
-        print("Percentage read: 0.0%")
+        print(Fore.RED + "📂 Total books: 0")
+        print(Fore.RED + "📊 Percentage read: 0.0%")
     else:
         read_count = sum(book["read"] for book in library)
         percentage = (read_count / total) * 100
-        print(f"Total books: {total}")
-        print(f"Percentage read: {percentage:.1f}%")
+        print(Fore.LIGHTMAGENTA_EX + f"📂 Total books: {total}")
+        print(Fore.LIGHTMAGENTA_EX + f"📊 Percentage read: {percentage:.1f}%")
 
 
 def print_menu():
     """Display the main menu."""
-    print("\nWelcome to your Personal Library Manager!")
-    print("1. Add a book")
-    print("2. Remove a book")
-    print("3. Search for a book")
-    print("4. Display all books")
-    print("5. Display statistics")
-    print("6. Exit")
+    print(Fore.LIGHTBLUE_EX + "\n📖 Welcome to your Personal Library Manager!")
+    print(Fore.YELLOW + "1. ➕ Add a book")
+    print(Fore.YELLOW + "2. 🗑 Remove a book")
+    print(Fore.YELLOW + "3. 🔍 Search for a book")
+    print(Fore.YELLOW + "4. 📚 Display all books")
+    print(Fore.YELLOW + "5. 📊 Display statistics")
+    print(Fore.YELLOW + "6. 🚪 Exit")
 
 
 # Main program
 def main():
-    filename = "library.txt"
+    filename = "library.json"
     library = load_library(filename)
+
     while True:
         print_menu()
-        choice = input("Enter your choice: ")
+        choice = input(Fore.CYAN + "👉 Enter your choice: ")
+
         if choice == "1":
             add_book(library)
         elif choice == "2":
@@ -137,10 +146,10 @@ def main():
             display_statistics(library)
         elif choice == "6":
             save_library(library, filename)
-            print("Library saved to file. Goodbye!")
+            print(Fore.GREEN + "✅ Library saved. Goodbye! 👋")
             break
         else:
-            print("Invalid choice. Please enter a number between 1 and 6.")
+            print(Fore.RED + "⚠️ Invalid choice. Please enter a number between 1 and 6.")
 
 
 if __name__ == "__main__":
