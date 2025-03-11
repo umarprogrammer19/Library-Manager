@@ -2,9 +2,7 @@ import json
 import os
 from colorama import Fore, Style, init
 
-# Initialize colorama
 init(autoreset=True)
-
 
 def load_library(filename):
     """Load the library from a file if it exists; otherwise, return an empty list."""
