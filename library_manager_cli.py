@@ -2,7 +2,6 @@ import json
 import os
 
 
-# Load library from file
 def load_library(filename):
     """Load the library from a file if it exists; otherwise, return an empty list."""
     if os.path.exists(filename):
@@ -11,14 +10,12 @@ def load_library(filename):
     return []
 
 
-# Save library to file
 def save_library(library, filename):
     """Save the library to a file."""
     with open(filename, "w") as file:
         json.dump(library, file)
 
 
-# Add a book to the library
 def add_book(library):
     """Prompt user for book details and add the book to the library."""
     title = input("Enter the book title: ")
@@ -47,11 +44,10 @@ def add_book(library):
     print("Book added successfully!")
 
 
-# Remove a book from the library
 def remove_book(library):
     """Remove a book by title from the library."""
     title = input("Enter the title of the book to remove: ")
-    for book in library[:]:  # Use a copy to avoid modifying list during iteration
+    for book in library[:]:  
         if book["title"].lower() == title.lower():
             library.remove(book)
             print("Book removed successfully!")
@@ -59,7 +55,6 @@ def remove_book(library):
     print("Book not found.")
 
 
-# Search for books by title or author
 def search_books(library):
     """Search for books by title or author and display matches."""
     print("Search by:")
@@ -86,7 +81,6 @@ def search_books(library):
         print("No matching books found.")
 
 
-# Display all books in the library
 def display_all_books(library):
     """Display all books in the library with formatted output."""
     if not library:
@@ -100,7 +94,6 @@ def display_all_books(library):
             )
 
 
-# Display library statistics
 def display_statistics(library):
     """Display total number of books and percentage read."""
     total = len(library)
@@ -114,7 +107,6 @@ def display_statistics(library):
         print(f"Percentage read: {percentage:.1f}%")
 
 
-# Print the menu
 def print_menu():
     """Display the main menu."""
     print("\nWelcome to your Personal Library Manager!")
