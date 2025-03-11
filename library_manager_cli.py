@@ -117,12 +117,12 @@ def display_statistics(library):
 def print_menu():
     """Display the main menu."""
     print(Fore.LIGHTBLUE_EX + "\n📖 Welcome to your Personal Library Manager!")
-    print(Fore.YELLOW + "1. ➕ Add a book")
-    print(Fore.YELLOW + "2. 🗑 Remove a book")
-    print(Fore.YELLOW + "3. 🔍 Search for a book")
-    print(Fore.YELLOW + "4. 📚 Display all books")
-    print(Fore.YELLOW + "5. 📊 Display statistics")
-    print(Fore.YELLOW + "6. 🚪 Exit")
+    print(Fore.YELLOW + "1.  Add a book")
+    print(Fore.YELLOW + "2.  Remove a book")
+    print(Fore.YELLOW + "3.  Search for a book")
+    print(Fore.YELLOW + "4.  Display all books")
+    print(Fore.YELLOW + "5.  Display statistics")
+    print(Fore.YELLOW + "6.  Exit")
 
 
 # Main program
