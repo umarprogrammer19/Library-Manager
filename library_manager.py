@@ -2,97 +2,56 @@ import streamlit as st
 import sqlite3
 import pandas as pd
 
-# Set page config as the first Streamlit command
-st.set_page_config(page_title="Library Manager", layout="wide")
+# Set page config at the top
+st.set_page_config(page_title="Library Manager", layout="centered")
 
 # Custom CSS for Professional Styling
 def load_css():
     st.markdown("""
     <style>
-        /* General Styling */
-        body {
-            font-family: 'Arial', sans-serif;
-        }
-        .stApp {
-            background-color: #f5f7fa;
-            color: #333333;
-        }
-        
-        /* Title Styling */
-        h1 {
-            color: #2c3e50;
-            font-weight: bold;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        
-        /* Subheader Styling */
-        h2 {
-            color: #34495e;
-            font-size: 1.5em;
-        }
-        
         /* Buttons */
         .stButton>button {
-            background-color: #3498db;
-            color: white;
+            background-color: var(--primary-color);
+            color: var(--text-color);
             border-radius: 5px;
             padding: 8px 15px;
             font-weight: bold;
         }
         .stButton>button:hover {
-            background-color: #2980b9;
-            color: white;
+            opacity: 0.9;
         }
         
-        /* Success and Error Messages */
-        .stSuccess {
-            background-color: #d4edda;
-            color: #155724;
-            border-radius: 5px;
-            padding: 10px;
-        }
-        .stError {
-            background-color: #f8d7da;
-            color: #721c24;
-            border-radius: 5px;
-            padding: 10px;
-        }
-        
-        /* Table Styling */
-        .dataframe {
-            border-collapse: collapse;
-            width: 100%;
-        }
+        /* Dataframe Styling */
         .dataframe th {
-            background-color: #34495e;
-            color: white;
+            background-color: var(--primary-color);
+            color: var(--text-color);
             padding: 10px;
             text-align: left;
         }
         .dataframe td {
             padding: 10px;
-            border-bottom: 1px solid #ddd;
+            border-bottom: 1px solid var(--secondary-background-color);
         }
         .dataframe tr:hover {
-            background-color: #ecf0f1;
-        }
-        
-        /* Sidebar Styling */
-        .css-1d391kg {
-            background-color: #2c3e50;
-            color: white;
-        }
-        .css-1d391kg a {
-            color: #ecf0f1;
+            background-color: var(--secondary-background-color);
         }
         
         /* Footer */
         .footer {
             text-align: center;
-            color: #7f8c8d;
+            color: var(--text-color);
             font-size: 0.9em;
             margin-top: 20px;
+        }
+        
+        /* Additional Styling */
+        hr {
+            margin: 20px 0;
+        }
+        .description {
+            color: var(--text-color);
+            font-size: 1.1em;
+            margin-bottom: 10px;
         }
     </style>
     """, unsafe_allow_html=True)
@@ -169,37 +128,40 @@ def main():
     # Title
     st.title("Library Manager")
 
-    # Sidebar Navigation
-    st.sidebar.title("Navigation")
-    page = st.sidebar.radio("Go to", ["View Books", "Add Book", "Search Books"])
+    # Tabs for navigation
+    tab1, tab2, tab3 = st.tabs(["View Books", "Add Book", "Search Books"])
 
-    # Initialize session state
+    # Initialize session state for editing
     if 'edit_id' not in st.session_state:
         st.session_state['edit_id'] = None
 
-    # Page Logic
-    if page == "View Books":
-        st.subheader("Book List")
+    # View Books Tab
+    with tab1:
+        st.markdown('<p class="description">Below is the list of books in your library. Use the buttons to edit or delete books.</p>', unsafe_allow_html=True)
         books_df = get_all_books()
         if not books_df.empty:
             for index, row in books_df.iterrows():
-                col1, col2 = st.columns([4, 1])
-                with col1:
-                    st.write(f"{row['title']} by {row['author']} (ISBN: {row['isbn']}) - {row['publication_year']} - {row['genre']}")
-                with col2:
-                    if st.button("Edit", key=f"edit_{row['id']}"):
-                        st.session_state['edit_id'] = row['id']
-                        st.rerun()
-                    if st.button("Delete", key=f"delete_{row['id']}"):
-                        delete_book(row['id'])
-                        st.rerun()
+                with st.container():
+                    col1, col2, col3 = st.columns([3, 1, 1])
+                    with col1:
+                        st.write(f"{row['title']} by {row['author']} (ISBN: {row['isbn']}) - {row['publication_year']} - {row['genre']}")
+                    with col2:
+                        if st.button("Edit", key=f"edit_{row['id']}"):
+                            st.session_state['edit_id'] = row['id']
+                            st.rerun()
+                    with col3:
+                        if st.button("Delete", key=f"delete_{row['id']}"):
+                            delete_book(row['id'])
+                            st.rerun()
             if st.session_state['edit_id']:
+                st.markdown("<hr>", unsafe_allow_html=True)
                 edit_book(st.session_state['edit_id'])
         else:
-            st.write("No books found.")
+            st.write("No books in the library.")
 
-    elif page == "Add Book":
-        st.subheader("Add New Book")
+    # Add Book Tab
+    with tab2:
+        st.markdown('<p class="description">Fill in the details to add a new book to your library.</p>', unsafe_allow_html=True)
         with st.form(key='add_book_form'):
             title = st.text_input("Title")
             author = st.text_input("Author")
@@ -222,26 +184,27 @@ def main():
             if cancel:
                 st.rerun()
 
-    elif page == "Search Books":
-        st.subheader("Search Books")
+    # Search Books Tab
+    with tab3:
+        st.markdown('<p class="description">Enter a search term to find books by title, author, or ISBN.</p>', unsafe_allow_html=True)
         search_query = st.text_input("Search by title, author, or ISBN")
         if search_query:
             books_df = search_books(search_query)
             if not books_df.empty:
                 st.dataframe(books_df, use_container_width=True)
             else:
-                st.write("No books found.")
+                st.write("No books match your search.")
 
     # Footer
     st.markdown('<div class="footer">Developed by Umar Farooq | Version 1.0</div>', unsafe_allow_html=True)
 
 # Edit Book Function
 def edit_book(book_id):
-    st.subheader("Edit Book")
     conn = sqlite3.connect('library.db')
     book = pd.read_sql_query("SELECT * FROM books WHERE id=?", conn, params=(book_id,)).iloc[0]
     conn.close()
 
+    st.write(f"Editing Book: {book['title']}")
     with st.form(key='edit_book_form'):
         title = st.text_input("Title", value=book['title'])
         author = st.text_input("Author", value=book['author'])
