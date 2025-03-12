@@ -2,14 +2,11 @@ import streamlit as st
 import sqlite3
 import pandas as pd
 
-# Set page config at the top
 st.set_page_config(page_title="Library Manager", layout="centered")
 
-# Custom CSS for Professional Styling
 def load_css():
     st.markdown("""
     <style>
-        /* Buttons */
         .stButton>button {
             background-color: var(--primary-color);
             color: var(--text-color);
@@ -21,7 +18,6 @@ def load_css():
             opacity: 0.9;
         }
         
-        /* Dataframe Styling */
         .dataframe th {
             background-color: var(--primary-color);
             color: var(--text-color);
@@ -36,7 +32,6 @@ def load_css():
             background-color: var(--secondary-background-color);
         }
         
-        /* Footer */
         .footer {
             text-align: center;
             color: var(--text-color);
@@ -44,7 +39,6 @@ def load_css():
             margin-top: 20px;
         }
         
-        /* Additional Styling */
         hr {
             margin: 20px 0;
         }
@@ -56,7 +50,7 @@ def load_css():
     </style>
     """, unsafe_allow_html=True)
 
-# Database Initialization
+# Database
 def init_db():
     conn = sqlite3.connect('library.db')
     c = conn.cursor()
@@ -70,7 +64,6 @@ def init_db():
     conn.commit()
     conn.close()
 
-# CRUD Functions
 def add_book(title, author, isbn, publication_year, genre):
     conn = sqlite3.connect('library.db')
     c = conn.cursor()
@@ -117,25 +110,17 @@ def delete_book(id):
     conn.commit()
     conn.close()
 
-# Streamlit Interface
 def main():
-    # Load custom CSS
     load_css()
-
-    # Initialize database
     init_db()
 
-    # Title
     st.title("Library Manager")
 
-    # Tabs for navigation
     tab1, tab2, tab3 = st.tabs(["View Books", "Add Book", "Search Books"])
 
-    # Initialize session state for editing
     if 'edit_id' not in st.session_state:
         st.session_state['edit_id'] = None
 
-    # View Books Tab
     with tab1:
         st.markdown('<p class="description">Below is the list of books in your library. Use the buttons to edit or delete books.</p>', unsafe_allow_html=True)
         books_df = get_all_books()
@@ -159,7 +144,6 @@ def main():
         else:
             st.write("No books in the library.")
 
-    # Add Book Tab
     with tab2:
         st.markdown('<p class="description">Fill in the details to add a new book to your library.</p>', unsafe_allow_html=True)
         with st.form(key='add_book_form'):
@@ -184,7 +168,6 @@ def main():
             if cancel:
                 st.rerun()
 
-    # Search Books Tab
     with tab3:
         st.markdown('<p class="description">Enter a search term to find books by title, author, or ISBN.</p>', unsafe_allow_html=True)
         search_query = st.text_input("Search by title, author, or ISBN")
@@ -195,10 +178,8 @@ def main():
             else:
                 st.write("No books match your search.")
 
-    # Footer
     st.markdown('<div class="footer">Developed by Umar Farooq | Version 1.0</div>', unsafe_allow_html=True)
 
-# Edit Book Function
 def edit_book(book_id):
     conn = sqlite3.connect('library.db')
     book = pd.read_sql_query("SELECT * FROM books WHERE id=?", conn, params=(book_id,)).iloc[0]
