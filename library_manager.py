@@ -2,9 +2,12 @@ import streamlit as st
 import sqlite3
 import pandas as pd
 
+# Set page config as the first Streamlit command
+st.set_page_config(page_title="Library Manager", layout="wide")
+
+# Custom CSS for Professional Styling
 def load_css():
-    st.markdown(
-        """
+    st.markdown("""
     <style>
         /* General Styling */
         body {
@@ -92,36 +95,29 @@ def load_css():
             margin-top: 20px;
         }
     </style>
-    """,
-        unsafe_allow_html=True,
-    )
+    """, unsafe_allow_html=True)
 
-
-# Database
+# Database Initialization
 def init_db():
-    conn = sqlite3.connect("library.db")
+    conn = sqlite3.connect('library.db')
     c = conn.cursor()
-    c.execute(
-        """CREATE TABLE IF NOT EXISTS books
+    c.execute('''CREATE TABLE IF NOT EXISTS books
                  (id INTEGER PRIMARY KEY AUTOINCREMENT,
                   title TEXT NOT NULL,
                   author TEXT NOT NULL,
                   isbn TEXT UNIQUE NOT NULL,
                   publication_year INTEGER,
-                  genre TEXT)"""
-    )
+                  genre TEXT)''')
     conn.commit()
     conn.close()
 
-
+# CRUD Functions
 def add_book(title, author, isbn, publication_year, genre):
-    conn = sqlite3.connect("library.db")
+    conn = sqlite3.connect('library.db')
     c = conn.cursor()
     try:
-        c.execute(
-            "INSERT INTO books (title, author, isbn, publication_year, genre) VALUES (?, ?, ?, ?, ?)",
-            (title, author, isbn, publication_year, genre),
-        )
+        c.execute("INSERT INTO books (title, author, isbn, publication_year, genre) VALUES (?, ?, ?, ?, ?)",
+                  (title, author, isbn, publication_year, genre))
         conn.commit()
         return True
     except sqlite3.IntegrityError:
@@ -129,33 +125,25 @@ def add_book(title, author, isbn, publication_year, genre):
     finally:
         conn.close()
 
-
 def get_all_books():
-    conn = sqlite3.connect("library.db")
+    conn = sqlite3.connect('library.db')
     df = pd.read_sql_query("SELECT * FROM books", conn)
     conn.close()
     return df
 
-
 def search_books(query):
-    conn = sqlite3.connect("library.db")
-    df = pd.read_sql_query(
-        "SELECT * FROM books WHERE title LIKE ? OR author LIKE ? OR isbn LIKE ?",
-        conn,
-        params=("%" + query + "%", "%" + query + "%", "%" + query + "%"),
-    )
+    conn = sqlite3.connect('library.db')
+    df = pd.read_sql_query("SELECT * FROM books WHERE title LIKE ? OR author LIKE ? OR isbn LIKE ?",
+                           conn, params=('%'+query+'%', '%'+query+'%', '%'+query+'%'))
     conn.close()
     return df
 
-
 def update_book(id, title, author, isbn, publication_year, genre):
-    conn = sqlite3.connect("library.db")
+    conn = sqlite3.connect('library.db')
     c = conn.cursor()
     try:
-        c.execute(
-            "UPDATE books SET title=?, author=?, isbn=?, publication_year=?, genre=? WHERE id=?",
-            (title, author, isbn, publication_year, genre, id),
-        )
+        c.execute("UPDATE books SET title=?, author=?, isbn=?, publication_year=?, genre=? WHERE id=?",
+                  (title, author, isbn, publication_year, genre, id))
         conn.commit()
         return True
     except sqlite3.IntegrityError:
@@ -163,52 +151,60 @@ def update_book(id, title, author, isbn, publication_year, genre):
     finally:
         conn.close()
 
-
 def delete_book(id):
-    conn = sqlite3.connect("library.db")
+    conn = sqlite3.connect('library.db')
     c = conn.cursor()
     c.execute("DELETE FROM books WHERE id=?", (id,))
     conn.commit()
     conn.close()
 
-
+# Streamlit Interface
 def main():
+    # Load custom CSS
     load_css()
-    init_db()
-    
-    st.set_page_config(page_title="Library Manager", layout="wide")
 
+    # Initialize database
+    init_db()
+
+    # Title
     st.title("Library Manager")
 
+    # Sidebar Navigation
     st.sidebar.title("Navigation")
     page = st.sidebar.radio("Go to", ["View Books", "Add Book", "Search Books"])
 
-    if "edit_id" not in st.session_state:
-        st.session_state["edit_id"] = None
+    # Initialize session state
+    if 'edit_id' not in st.session_state:
+        st.session_state['edit_id'] = None
 
+    # Page Logic
     if page == "View Books":
         st.subheader("Book List")
         books_df = get_all_books()
         if not books_df.empty:
-            books_df["Actions"] = books_df["id"].apply(
-                lambda x: f'<button onclick="st.session_state.edit_id={x};st.rerun()">Edit</button> '
-                f'<button onclick="delete_book({x});st.rerun()">Delete</button>'
-            )
-            st.dataframe(books_df.drop(columns=["Actions"]), use_container_width=True)
-            if st.session_state["edit_id"]:
-                edit_book(st.session_state["edit_id"])
+            for index, row in books_df.iterrows():
+                col1, col2 = st.columns([4, 1])
+                with col1:
+                    st.write(f"{row['title']} by {row['author']} (ISBN: {row['isbn']}) - {row['publication_year']} - {row['genre']}")
+                with col2:
+                    if st.button("Edit", key=f"edit_{row['id']}"):
+                        st.session_state['edit_id'] = row['id']
+                        st.rerun()
+                    if st.button("Delete", key=f"delete_{row['id']}"):
+                        delete_book(row['id'])
+                        st.rerun()
+            if st.session_state['edit_id']:
+                edit_book(st.session_state['edit_id'])
         else:
             st.write("No books found.")
 
     elif page == "Add Book":
         st.subheader("Add New Book")
-        with st.form(key="add_book_form"):
+        with st.form(key='add_book_form'):
             title = st.text_input("Title")
             author = st.text_input("Author")
             isbn = st.text_input("ISBN")
-            year = st.number_input(
-                "Publication Year", min_value=1000, max_value=9999, step=1
-            )
+            year = st.number_input("Publication Year", min_value=1000, max_value=9999, step=1)
             genre = st.text_input("Genre")
             col1, col2 = st.columns(2)
             with col1:
@@ -237,32 +233,21 @@ def main():
                 st.write("No books found.")
 
     # Footer
-    st.markdown(
-        '<div class="footer">Developed by [Your Name] | Version 1.0</div>',
-        unsafe_allow_html=True,
-    )
+    st.markdown('<div class="footer">Developed by Umar Farooq | Version 1.0</div>', unsafe_allow_html=True)
 
-
+# Edit Book Function
 def edit_book(book_id):
     st.subheader("Edit Book")
-    conn = sqlite3.connect("library.db")
-    book = pd.read_sql_query(
-        "SELECT * FROM books WHERE id=?", conn, params=(book_id,)
-    ).iloc[0]
+    conn = sqlite3.connect('library.db')
+    book = pd.read_sql_query("SELECT * FROM books WHERE id=?", conn, params=(book_id,)).iloc[0]
     conn.close()
 
-    with st.form(key="edit_book_form"):
-        title = st.text_input("Title", value=book["title"])
-        author = st.text_input("Author", value=book["author"])
-        isbn = st.text_input("ISBN", value=book["isbn"])
-        year = st.number_input(
-            "Publication Year",
-            min_value=1000,
-            max_value=9999,
-            value=int(book["publication_year"]),
-            step=1,
-        )
-        genre = st.text_input("Genre", value=book["genre"])
+    with st.form(key='edit_book_form'):
+        title = st.text_input("Title", value=book['title'])
+        author = st.text_input("Author", value=book['author'])
+        isbn = st.text_input("ISBN", value=book['isbn'])
+        year = st.number_input("Publication Year", min_value=1000, max_value=9999, value=int(book['publication_year']), step=1)
+        genre = st.text_input("Genre", value=book['genre'])
         col1, col2 = st.columns(2)
         with col1:
             update = st.form_submit_button(label="Update Book")
@@ -272,16 +257,15 @@ def edit_book(book_id):
             if title and author and isbn:
                 if update_book(book_id, title, author, isbn, year, genre):
                     st.success("Book updated successfully")
-                    st.session_state["edit_id"] = None
+                    st.session_state['edit_id'] = None
                     st.rerun()
                 else:
                     st.error("Error: ISBN already exists")
             else:
                 st.error("Please fill in all required fields")
         if cancel:
-            st.session_state["edit_id"] = None
+            st.session_state['edit_id'] = None
             st.rerun()
-
 
 if __name__ == "__main__":
     main()
